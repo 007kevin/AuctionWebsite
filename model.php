@@ -193,11 +193,9 @@
                     'description' => $row['description'],
                     'category' => $row['category']
                 );
-            closeConn();
             return $auction;
         }
         else{
-            closeConn();
             return 0;
         }
     }

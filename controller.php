@@ -125,6 +125,7 @@
                 header("Content-Type: application/json; charset=UTF-8");
                 $user = $_SESSION['username'];
                 echo(getUserBidAuctions($user));
+                closeConn()
                 exit();
 
             //command to delete auction
