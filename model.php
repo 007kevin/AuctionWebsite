@@ -4,10 +4,17 @@
     if (mysqli_connect_errno())
         echo "Failed to connect to database: " . mysqli_connect_error();
 
+    function closeConn(){
+        global $conn;
+        mysqli_close($conn);
+        unset($conn);
+    }
+
     function checkDuplicateUser($username){
         global $conn;
         $sql = "SELECT * FROM users WHERE username='$username'";
         $result = mysqli_query($conn, $sql);
+        closeConn();
         if (mysqli_num_rows($result) == 0)
             return false;
         else
@@ -17,10 +24,13 @@
     function createUser($username, $password){
         global $conn;
         $sql = "INSERT INTO users (username, password) VALUES ('$username', '$password')";
-        if (mysqli_query($conn, $sql))
+        if (mysqli_query($conn, $sql)){
+            closeConn();
             return 0;
+        }
         else {
             echo "error: " . mysqli_error($conn);
+            closeConn();
             return 1;
         }
     }
@@ -29,6 +39,7 @@
         global $conn;
         $sql = "SELECT * FROM users WHERE username='$username' AND password='$password'";
         $result = mysqli_query($conn, $sql);
+        closeConn();
         if (mysqli_num_rows($result) == 0)
             return false;
         else
@@ -39,10 +50,13 @@
         global $conn;
         $sql = "INSERT INTO auctions (title, price, datetime, auctiontime, user, image, description, category)
                     VALUES ('$title', '$price', '$datetime', '$auctiontime', '$user', '$image', '$description', '$category')";
-        if (mysqli_query($conn, $sql))
+        if (mysqli_query($conn, $sql)){
+            closeConn();
             return 0;
+        }
         else {
             echo "error: " .mysqli_error($conn);
+            closeConn();
             return 1;
         }
     }
@@ -81,10 +95,13 @@
                 );
 
             }
+            closeConn();
             return json_encode($json);
         }
-        else
+        else{
+            closeConn();
             return 0;
+        }
 
     }
 
@@ -119,10 +136,13 @@
                 );
 
             }
+            closeConn();
             return json_encode($json);
         }
-        else
+        else{
+            closeConn();
             return 0;
+        }
     } 
 
     function getUserBidAuctions($username){
@@ -135,11 +155,14 @@
                 error_log($row['aid']);
                 $bids[] = getAuction($row['aid']);
             }
+            closeConn();
             return json_encode($bids);
 
         }
-        else
+        else{
+            closeConn();
             return 0;
+        }
 
     }
 
@@ -170,20 +193,26 @@
                     'description' => $row['description'],
                     'category' => $row['category']
                 );
+            closeConn();
             return $auction;
         }
-        else
+        else{
+            closeConn();
             return 0;
+        }
     }
 
     function insertBid($aid, $user, $amount){
         global $conn;
         $datetime = date("Y-m-d H:i:s", time());
         $sql = "INSERT INTO bids (aid, user, bid, datetime) VALUES ('$aid', '$user', '$amount', '$datetime')";
-        if (mysqli_query($conn, $sql))
+        if (mysqli_query($conn, $sql)){
+            closeConn();
             return 0;
+        }
         else{ 
             echo "error: " . mysqli_error($conn);
+            closeConn();
             return 1;
         }
     }
@@ -203,10 +232,13 @@
                     'bid' => $row['bid']
                 );
             }
+            closeConn();
             return json_encode($data);
         }
-        else
+        else{
+            closeConn();
             return 0;
+        }
     }
 
     function deleteAuction($id){
@@ -223,19 +255,22 @@
 
 
         $sql = "DELETE FROM auctions WHERE id='$id'";
+        $errflag;
         if (mysqli_query($conn, $sql))
-            return 0;
+            $errflag = 0;
         else{
             error_log("error: " . mysqli_error($conn));
-            return 1;
+            $errflag = 1;
         }
          $sql = "DELETE FROM bids WHERE aid='$id'";
         if (mysqli_query($conn, $sql))
-            return 0;
+            $errflag = 0;
         else{
             error_log("error: " . mysqli_error($conn));
-            return 1;
+            $errflag = 1;
         }
+        closeConn();
+        return $errflag;
     }
     
 ?>
